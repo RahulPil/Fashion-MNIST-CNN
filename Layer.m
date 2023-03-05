@@ -11,7 +11,7 @@ classdef Layer < handle
         biasVector
         transferFunc
         learningRate
-        netOutput
+        lastInput
         sensitivity
                 
         
@@ -19,6 +19,9 @@ classdef Layer < handle
         % weightMatrix and biasVector could just be set to equal the new
         % versions and the only time we would need such a variable would be
         % for updating the new weights and biases
+
+        %% these cannot be deleted as they are required to accumulate the
+        %% change in gradient
         batchNewWeights
         batchNewBiases
     end

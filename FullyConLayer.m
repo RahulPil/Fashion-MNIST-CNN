@@ -1,9 +1,6 @@
 classdef FullyConLayer < Layer
     %UNTITLED5 Summary of this class goes here
     %   Detailed explanation goes here
-    properties
-        sensitivity
-    end
 
     methods
         function obj = FullyConLayer(inputSize, outputSize, transfer)
@@ -11,21 +8,24 @@ classdef FullyConLayer < Layer
         end
 
         function [obj, output] = forward(obj,input)
+            input = reshape(input,[[],1]);
+            obj.lastInput = input;
             output = obj.transfer(obj.weightMatrix*input+obj.biasVector);
         end
         
-        %i just dont know the direvative of the softmax function but once i
-        %get that i think all we have to do is simply replace the (1-a) .*a
-        %with the direvative of the softmax function cause the prior is the
-        %direvative of the logsigmoid function
-        function obj = calcSensitivity(obj, error, a)
-            s = -2*diag((1 - a) .* a) * e;
-            obj.sensitivity = s;
+        % I think the derivative of the loss wrt the softmax output is just
+        % softmax(netInput)-target aka -error
+        % this is that expression that I asked him about and he didn't know
+        % how to derive but there seems to be a good derivation here:
+        % https://towardsdatascience.com/derivative-of-the-softmax-function
+        % -and-the-categorical-cross-entropy-loss-ffceefc081d1
+        function obj = calcLastSensitivity(obj, error)
+            obj.sensitivity = -error;
         end
 
-        function obj = updateLayer(obj, prevOutput)
-            obj.weightMatrix = obj.weightMatrix - obj.learningRate*obj.sensitivity*prevOutput';
-            obj.biasVector = obj.biasVector - obj.learningRate*obj.sensitivity;
+        function obj = updateLayer(obj)
+            obj.batchNewWeights = obj.batchNewWeights + obj.sensitivity*obj.lastInput';
+            obj.batchNewBiases = obj.batchNewBiases + obj.sensitivity;
         end
     end
 end

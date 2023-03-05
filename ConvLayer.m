@@ -21,7 +21,7 @@ classdef ConvLayer < Layer
             obj.lastInput = input;
         end
 
-        function [obj, s] = calcSensitivity(obj, prevSensitivity)
+        function [obj, s] = calcSensitivity(obj, prevSensitivity,~)
             % this is the one where we have a 180 flipped kernel that
             % convolves over the gradient recieved from the maxpool layer
             % but make sure that its a full convolution
@@ -32,19 +32,14 @@ classdef ConvLayer < Layer
             s = conv2(prevSensitivity, rot90(obj.weightMatrix, 2), 'full');
             obj.sensitivity = s;
         end
-        % in hindsight I thnk that this function should do the same thing
-        % as updatelayer1 but im not sure if we wanna keep this or not
-        function obj = updateLayer(obj)
-        end
 
-        function obj = updateLayer1(obj, prevSensitivity, output)
-            % this is the one where we update the weights by convolving the
-            % sensitivity of the preivous layer over the input image and
-            % then do the regular ting for updating the weights
-            obj.weightMatrix = obj.weightMatrix - obj.learningRate*(conv2(output, prevSensitivity));
+        function obj = updateLayer(obj, prevSensitivity)
+            % add gradient dLoss/dFilter to batch gradient
+            obj.batchNewWeights = obj.batchNewWeights + conv2(obj.lastInput, prevSensitivity);
             
-            % updating the bias vector is slightly confusing. bias vectors
-            % are overated anyway who tf even cares about them 
+            % turns out the gradient of the bias is just the sum of the
+            % next layers' gradient?
+            obj.batchNewBiases = obj.batchNewBiases+sum(prevSensitivity);
         end
     end
 end
