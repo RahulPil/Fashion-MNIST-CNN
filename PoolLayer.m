@@ -15,7 +15,7 @@ classdef PoolLayer < Layer
             obj.stride = stride;
         end
 
-        function output = forward(obj,input)
+        function [obj, output] = forward(obj,input)
             output = zeros(obj.outputSize);
             for row = 1:obj.outputSize(1)
                 for col = 1: obj.outputSize(0)
@@ -25,6 +25,7 @@ classdef PoolLayer < Layer
                     output(row,col) = max(input(i+1:i+obj.stride,j+1:j+obj.stride));
                 end
             end
+            obj.lastInput = input;
         end
 
         function obj = calcSensitivity(obj, prevOut, nextSens, nextWeight) % do we need to store net input?

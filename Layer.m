@@ -7,6 +7,12 @@ classdef Layer < handle
         sensitivity
         transfer
         learningRate
+        lastInput
+        netOutput
+
+        % hold info for the current batch
+        batchNewWeights
+        batchNewBiases
     end
 
     methods
@@ -21,16 +27,22 @@ classdef Layer < handle
 
 
         % fully virtual or some shit idfk
-        function output = forward(obj,input) 
-        end
+        [obj, output] = forward(obj,input) 
 
-        function obj = calcSensitivity(obj, prevOut, nextSens, nextWeight) % do we need to store net input?
-        end
+        obj = calcSensitivity(obj, nextSens, nextWeight) % do we need to store net input? Yeah, I think so
+        %should update both "batch" variables
 
-        function obj = calcLastSensitivity(obj, error, output)
-        end
+        obj = calcLastSensitivity(obj, error)
+        %should update both "batch" variables
 
-        function obj = updateLayer(obj, sensitivity, prevOut)
+        %obj = updateLayer(obj)
+
+        function obj = endBatch(obj, batchSize)
+            obj.weightMatrix = obj.weightMatrix - (obj.learningRate/batchSize)*obj.batchNewWeights;
+            obj.biasVector = obj.biasVector - (obj.learningRate/batchSize)*obj.batchNewBiases;
+
+            obj.batchNewWeights(:) = 0;
+            obj.batchNewBiases(:) = 0;
         end
     end
 end

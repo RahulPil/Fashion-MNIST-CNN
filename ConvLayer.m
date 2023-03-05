@@ -13,11 +13,12 @@ classdef ConvLayer < Layer
             obj.numFilters = numFilters;
         end
 
-        function output = forward(obj, input)
+        function [obj, output] = forward(obj, input)
             output = zeros(size(input,1)-size(obj.weightMatrix,1)+1,size(input,2)-size(obj.weightMatrix,2)+1,obj.numFilters);
             for i =1:obj.numFilters
                 output(:,:,i) = transfer(conv2(input,obj.weightMatrix(:,:,i)));
             end
+            obj.lastInput = input;
         end
 
         % tfw conv backprop is complicated ;-;

@@ -7,8 +7,9 @@ classdef FullyConLayer < Layer
            obj = obj@Layer(inputSize,outputSize,transfer);
         end
 
-        function output = forward(obj,input)
+        function [obj, output] = forward(obj,input)
             output = obj.transfer(obj.weightMatrix*input+obj.biasVector);
+            obj.lastInput = input;
         end
 
         function obj = calcSensitivity(obj, prevOut, nextSens, nextWeight) % do we need to store net input?
