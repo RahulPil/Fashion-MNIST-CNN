@@ -44,7 +44,6 @@ classdef ConvLayer < Layer
             
             % turns out the gradient of the bias is just the sum of the
             % next layers' gradient?
-            size(sum(prevSensitivity,[1,2]))
             b = repmat(sum(prevSensitivity,[1,2]),[size(obj.biasVector,1),size(obj.biasVector,2),1]);
             % size(b)
             % b = reshape(b, [26, 26, obj.numFilters]);        % this line might very well be problematic
