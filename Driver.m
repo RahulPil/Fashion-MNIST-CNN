@@ -5,10 +5,10 @@
 % trainingData = trainingData(1:50000,:);
 % testLabels = labels(50001:end);
 
-epochs = 2;
+epochs = 1;
 batchSize = 100;
 learningRate = 0.05;
-numFilters = 8;
+numFilters = 1;
 filterSize = 3;
 
 layers = {ConvLayer(filterSize, numFilters, @relu, [28 28]);
@@ -41,7 +41,7 @@ plot(trainingPerf)
 % this should happen per epoch but putting it here for now
 loss = 0;
 for i=1:size(testData,1)
-    [network,actual] = network.feedForward(testData(i,:));
+    [network,actual] = network.feedForward(reshape(testData(i,:),28,28));
     loss = loss - log(actual(testLabels(i)));
 end
 loss = loss/size(testData,1)

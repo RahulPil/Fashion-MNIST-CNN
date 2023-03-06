@@ -33,7 +33,7 @@ classdef CNN
 
         function obj = networkEndBatch(obj)
             for i = 1:length(obj.layers)
-                obj.layers{i}.endBatch(obj.batchSize);
+                obj.layers{i}.endBatch(obj.batchSize,obj.learningRate);
             end
             obj.batchIncrementor = 0;
         end

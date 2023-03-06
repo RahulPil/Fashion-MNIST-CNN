@@ -24,12 +24,7 @@ classdef FullyConLayer < Layer
         end
 
         function obj = updateLayer(obj)
-            size(obj.sensitivity)
-            size(obj.lastInput')
-            size(obj.sensitivity*obj.lastInput')
-            size(obj.batchNewWeights)
             obj.batchNewWeights = obj.batchNewWeights + obj.sensitivity*obj.lastInput';
-            size(obj.batchNewBiases)
             obj.batchNewBiases = obj.batchNewBiases + obj.sensitivity;
         end
 

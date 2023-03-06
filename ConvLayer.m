@@ -12,13 +12,12 @@ classdef ConvLayer < Layer
             obj.numFilters = numFilters;
             obj.biasVector = permute(repmat(obj.biasVector,[1,inputSize(2)-filterSize+1,inputSize(1)-filterSize+1]),[3 2 1]);
             obj.batchNewBiases = zeros(size(obj.biasVector));
+            obj.batchNewWeights = zeros(size(obj.weightMatrix));
         end
 
         function [obj, output] = forward(obj, input)
-            obj.lastInput = convn(repmat(input,[1,1,obj.numFilters]),obj.weightMatrix,'valid');
-            size(obj.lastInput)
-            size(obj.biasVector)
-            output = obj.transferFunc(obj.lastInput+obj.biasVector);
+            obj.lastInput = repmat(input,[1,1,obj.numFilters]);
+            output = obj.transferFunc(convn(obj.lastInput,obj.weightMatrix,'valid')+obj.biasVector);
         end
 
         function [obj, s] = calcSensitivity(obj, prevSensitivity,~)
@@ -39,12 +38,10 @@ classdef ConvLayer < Layer
             
             % turns out the gradient of the bias is just the sum of the
             % next layers' gradient?
-            butch = permute(repmat(sum(prevSensitivity,[1,2]),[1,size(obj.biasVector,2),size(obj.biasVector,1)]),[3 2 1]);
-            butch = reshape(butch, [26, 26, 8]);
-            size(butch)
-            size(obj.batchNewBiases)
+            b = permute(repmat(sum(prevSensitivity,[1,2]),[1,size(obj.biasVector,2),size(obj.biasVector,1)]),[3 2 1]);
+            b = reshape(b, [26, 26, 8]);        % this line might very well be problematic
 %             obj.batchNewBiases = obj.batchNewBiases+permute(repmat(sum(prevSensitivity,[1,2]),[1,size(obj.biasVector,2),size(obj.biasVector,1)]),[3 2 1]);]
-            obj.batchNewBiases = obj.batchNewBiases+butch;
+            obj.batchNewBiases = obj.batchNewBiases+b;
         end
     end
 end

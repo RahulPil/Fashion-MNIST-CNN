@@ -31,10 +31,9 @@ classdef Layer < handle
         % put this here because its not a virtual method but at the same
         % time i am unaware how the actual purpose of this function and why
         % we need to carry out the batchNewWeights calculation like this.
-        function obj = endBatch(obj, batchSize)
-            butch = size(obj.batchNewWeights)
-            obj.weightMatrix = obj.weightMatrix - (obj.learningRate/batchSize)*obj.batchNewWeights;
-            obj.biasVector = obj.biasVector - (obj.learningRate/batchSize)*obj.batchNewBiases;
+        function obj = endBatch(obj, batchSize,learningRate)
+            obj.weightMatrix = obj.weightMatrix - (learningRate/batchSize)*obj.batchNewWeights;
+            obj.biasVector = obj.biasVector - (learningRate/batchSize)*obj.batchNewBiases;
 
             obj.batchNewWeights(:) = 0;
             obj.batchNewBiases(:) = 0;
