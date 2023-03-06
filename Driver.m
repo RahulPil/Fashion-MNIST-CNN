@@ -1,9 +1,9 @@
-% trainingData = readmatrix('train.csv');
-% labels = uint8(trainingData(:,2))+1; % these are from 1-10!!!!
-% trainingData = uint8(trainingData(:,3:end)/255);
-% testData = trainingData(50001:end,:);
-% trainingData = trainingData(1:50000,:);
-% testLabels = labels(50001:end);
+trainingData = readmatrix('train.csv');
+labels = uint8(trainingData(:,2))+1; % these are from 1-10!!!!
+trainingData = trainingData(:,3:end)/255;
+testData = trainingData(50001:end,:);
+trainingData = trainingData(1:50000,:);
+testLabels = labels(50001:end);
 
 epochs = 1;
 batchSize = 100;
