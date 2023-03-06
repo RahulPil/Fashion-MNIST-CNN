@@ -5,44 +5,44 @@
 % trainingData = trainingData(1:50000,:);
 % testLabels = labels(50001:end);
 
-epochs = 1;
-batchSize = 100;
-learningRate = 0.05;
-numFilters = 2;
-filterSize = 3;
-
-layers = {ConvLayer(filterSize, numFilters, @relu, [28 28])...
-          PoolLayer([28-filterSize+1,28-filterSize+1,numFilters], 2)...
-          FullyConLayer(13*13*numFilters, 10, @softmax)};
-network = CNN(layers, learningRate, batchSize);
-
-[lengthTrainingData, ~] = size(trainingData);
-
-numBatches = floor(lengthTrainingData/batchSize);
-target = eye(10);
-
-trainingPerf = zeros(numBatches*epochs);
-for num = 1:epochs
-    for i = 0:numBatches-1
-        loss = 0;
-        for j = 1:batchSize
-            it = i*batchSize+j;
-            [network,actual] = network.feedForward(reshape(trainingData(it,:),28,28));
-            loss = loss - log(actual(labels(it)));   % cross entropy loss
-            network = network.backwards(target(labels(it)), actual);
-        end
-        trainingPerf((num-1)*numBatches+i+1) = loss/batchSize;
-        network = network.networkEndBatch();
-    end
-end
-plot(trainingPerf)
+% epochs = 1;
+% batchSize = 100;
+% learningRate = 0.001;
+% numFilters = 4;
+% filterSize = 3;
+% 
+% layers = {ConvLayer(filterSize, numFilters, @relu, [28 28])...
+%           PoolLayer([28-filterSize+1,28-filterSize+1,numFilters], 2)...
+%           FullyConLayer(13*13*numFilters, 10, @softmax)};
+% network = CNN(layers, learningRate, batchSize);
+% 
+% [lengthTrainingData, ~] = size(trainingData);
+% 
+% numBatches = floor(lengthTrainingData/batchSize);
+% target = eye(10);
+% 
+% trainingPerf = zeros(numBatches*epochs,1);
+% for num = 1:epochs
+%     for i = 0:numBatches-1
+%         loss = 0;
+%         for j = 1:batchSize
+%             it = i*batchSize+j;
+%             [network,actual] = network.feedForward(repmat(reshape(trainingData(it,:),28,28),[1,1,numFilters]));
+%             loss = loss - log(actual(labels(it)));   % cross entropy loss
+%             network = network.backwards(target(:,labels(it)), actual);
+%         end
+%         trainingPerf((num-1)*numBatches+i+1) = loss/batchSize;
+%         network = network.networkEndBatch();
+%     end
+% end
+% plot(trainingPerf)
 
 
 % this should happen per epoch but putting it here for now
 loss = 0;
 acc = 0;
 for i=1:size(testData,1)
-    [network,actual] = network.feedForward(reshape(testData(i,:),28,28));
+    [network,actual] = network.feedForward(repmat(reshape(testData(i,:),28,28),[1,1,numFilters]));
     loss = loss - log(actual(testLabels(i)));
     [m,ind] = max(actual);
     if ind==testLabels(i)

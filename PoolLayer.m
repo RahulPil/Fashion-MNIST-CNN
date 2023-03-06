@@ -54,9 +54,9 @@ classdef PoolLayer < Layer
 %             for i = 1:length(obj.max_val_coords)
 %                 s(obj.max_val_coords(i(1)), obj.max_val_coords(i(2))) = shite(i);
 %             end
-            v = reshape(prevWeight'*prevSensitivity,[13,13,obj.inputSize(3)]);
-                        a = zeros(26,26,obj.inputSize(3));
-                        for i = 1:13
+            v = reshape(prevWeight'*prevSensitivity,[obj.inputSize(1)/2,obj.inputSize(2)/2,obj.inputSize(3)]);
+                        a = zeros(obj.inputSize);
+                        for i = 1:obj.inputSize(1)/2
                             a(1:2:end,2*(i-1)+1:2*i,:) = repmat(v(:,i,:), [1, 2]);
                             a(2:2:end,2*(i-1)+1:2*i,:) = repmat(v(:,i,:), [1, 2]);
                         end

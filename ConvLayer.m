@@ -22,8 +22,12 @@ classdef ConvLayer < Layer
         end
 
         function [obj, output] = forward(obj, input)
-            obj.lastInput = repmat(input,[1,1,obj.numFilters]);
-            output = obj.transferFunc(convn(obj.lastInput,obj.weightMatrix,'valid')+obj.biasVector);
+            obj.lastInput = input;
+            temp = zeros(size(obj.lastInput)-size(obj.weightMatrix)+[1 1 obj.numFilters]);
+            for i=1:obj.numFilters
+                temp(:,:,i) = conv2(obj.lastInput(:,:,i),obj.weightMatrix(:,:,i),'valid');
+            end
+            output = obj.transferFunc(temp+obj.biasVector);
         end
 
         function [obj, s] = calcSensitivity(obj, prevSensitivity,~)
@@ -34,13 +38,20 @@ classdef ConvLayer < Layer
             % function here? because we could but... idk i thought it might
             % be redundant but it might not be if we arent dealing with any
             % max pooling layers in the network right?
+            size(repmat(prevSensitivity,[1,1,obj.numFilters]))
+            size(rot90(obj.weightMatrix, 2))
             s = convn(repmat(prevSensitivity,[1,1,obj.numFilters]), rot90(obj.weightMatrix, 2), 'full');
+            size(s)
             obj.sensitivity = s;
         end
 
         function obj = updateLayer(obj, prevSensitivity)
             % add gradient dLoss/dFilter to batch gradient
-            obj.batchNewWeights = obj.batchNewWeights + convn(obj.lastInput, prevSensitivity,'valid');
+
+            for i=1:obj.numFilters
+                obj.batchNewWeights(:,:,i) = obj.batchNewWeights(:,:,i) + conv2(obj.lastInput(:,:,i),prevSensitivity(:,:,i),'valid');
+            end
+
             
             % turns out the gradient of the bias is just the sum of the
             % next layers' gradient?
