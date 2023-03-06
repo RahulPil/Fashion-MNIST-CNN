@@ -6,6 +6,7 @@ classdef PoolLayer < Layer
         stride
         % newly created property for calculating the sensitivity
         outputInds
+        max_val_coords
     end
 
     methods
@@ -20,6 +21,7 @@ classdef PoolLayer < Layer
         % input with 1s where the winners are
         function [obj, output] = forward(obj,input)
             output = zeros(obj.outputSize);
+            %obj.max_val_coords = [];
             obj.outputInds = zeros(obj.inputSize);
             for channel=1:obj.outputSize(3)
                 for row = 1:obj.outputSize(1)
@@ -31,6 +33,7 @@ classdef PoolLayer < Layer
                         [actualMax, rowInd] = max(colMax);
                         obj.outputInds((row-1)*obj.stride+rowInd,(col-1)*obj.stride+colInd,channel) = 1;
                         output(row,col,channel) = actualMax;
+                        %obj.max_val_coords(end+1) = [rowInd, colInd];
                     end
                 end
             end
@@ -57,8 +60,22 @@ classdef PoolLayer < Layer
         
         % I *think* we have to compute the gradient of the previous layer
         % then we just take only the winning elements of that
-        function s = calcSensitivity(obj,prevSensitivity,prevWeight)
-            s = obj.outputInds.*reshape(prevWeight'*prevSensitivity,size(obj.outputInds));
+        function obj = calcSensitivity(obj,prevSensitivity,prevWeight)
+%             shite = prevWeight'*prevSensitivity;
+%             s = zeros(obj.outputInds);
+%             for i = 1:length(obj.max_val_coords)
+%                 s(obj.max_val_coords(i(1)), obj.max_val_coords(i(2))) = shite(i);
+%             end
+            v = reshape(prevWeight'*prevSensitivity,[13,13,8]);
+                        a = zeros(26,26,8);
+                        for i = 1:13
+                            a(1:2:end,2*(i-1)+1:2*i,:) = repmat(v(:,i,:), [1, 2]);
+                            a(2:2:end,2*(i-1)+1:2*i,:) = repmat(v(:,i,:), [1, 2]);
+                        end
+                        s = obj.outputInds.*a;
+            obj.sensitivity = s;
+
+%             s = obj.outputInds.*reshape(prevWeight'*prevSensitivity, size(obj.outputInds));
         end
 
         % old
@@ -108,7 +125,7 @@ classdef PoolLayer < Layer
         % purely only here because if we dont have this and the following
         % functions then this technically isnt a subclass but an abstract
         % class so it wont be able to fall under the layer class
-        function obj = updateLayer(obj,~)
+        function obj = updateLayer(obj,varargin)
         end
     end
 end

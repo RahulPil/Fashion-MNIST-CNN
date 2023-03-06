@@ -1,5 +1,5 @@
 
-classdef Layer < matlab.mixin.Heterogeneous
+classdef Layer < handle
     properties
         weightMatrix
         biasVector
@@ -7,12 +7,6 @@ classdef Layer < matlab.mixin.Heterogeneous
         learningRate
         lastInput
         sensitivity
-                
-        
-        % these could just be deleted in my opinion because the
-        % weightMatrix and biasVector could just be set to equal the new
-        % versions and the only time we would need such a variable would be
-        % for updating the new weights and biases
 
         %% these cannot be deleted as they are required to accumulate the
         %% change in gradient
@@ -26,7 +20,9 @@ classdef Layer < matlab.mixin.Heterogeneous
             % (zero-mean normal dist with stdev of sqrt(2/inputSize))
             obj.transferFunc = transfer;
             obj.weightMatrix = normrnd(0,sqrt(2/inputSize),outputSize,inputSize);
+            obj.batchNewWeights = zeros(size(obj.weightMatrix));
             obj.biasVector = zeros(outputSize,1);
+            obj.batchNewBiases = zeros(size(obj.biasVector));
         end
         
         % too braindead to understand what the fuck this thing does but
@@ -36,6 +32,7 @@ classdef Layer < matlab.mixin.Heterogeneous
         % time i am unaware how the actual purpose of this function and why
         % we need to carry out the batchNewWeights calculation like this.
         function obj = endBatch(obj, batchSize)
+            butch = size(obj.batchNewWeights)
             obj.weightMatrix = obj.weightMatrix - (obj.learningRate/batchSize)*obj.batchNewWeights;
             obj.biasVector = obj.biasVector - (obj.learningRate/batchSize)*obj.batchNewBiases;
 

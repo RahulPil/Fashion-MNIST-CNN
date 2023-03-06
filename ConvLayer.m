@@ -11,6 +11,7 @@ classdef ConvLayer < Layer
             obj.weightMatrix = reshape(obj.weightMatrix,[filterSize,filterSize,numFilters]);
             obj.numFilters = numFilters;
             obj.biasVector = permute(repmat(obj.biasVector,[1,inputSize(2)-filterSize+1,inputSize(1)-filterSize+1]),[3 2 1]);
+            obj.batchNewBiases = zeros(size(obj.biasVector));
         end
 
         function [obj, output] = forward(obj, input)
@@ -38,7 +39,12 @@ classdef ConvLayer < Layer
             
             % turns out the gradient of the bias is just the sum of the
             % next layers' gradient?
-            obj.batchNewBiases = obj.batchNewBiases+permute(repmat(sum(prevSensitivity,[1,2]),[1,size(obj.biasVector,2),size(obj.biasVector,1)]),[3 2 1]);
+            butch = permute(repmat(sum(prevSensitivity,[1,2]),[1,size(obj.biasVector,2),size(obj.biasVector,1)]),[3 2 1]);
+            butch = reshape(butch, [26, 26, 8]);
+            size(butch)
+            size(obj.batchNewBiases)
+%             obj.batchNewBiases = obj.batchNewBiases+permute(repmat(sum(prevSensitivity,[1,2]),[1,size(obj.biasVector,2),size(obj.biasVector,1)]),[3 2 1]);]
+            obj.batchNewBiases = obj.batchNewBiases+butch;
         end
     end
 end

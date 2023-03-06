@@ -4,15 +4,16 @@
 % testData = trainingData(50001:end,:);
 % trainingData = trainingData(1:50000,:);
 % testLabels = labels(50001:end);
+
 epochs = 2;
 batchSize = 100;
 learningRate = 0.05;
 numFilters = 8;
 filterSize = 3;
 
-layers = [ConvLayer(filterSize, numFilters, @relu, [28 28]);
+layers = {ConvLayer(filterSize, numFilters, @relu, [28 28]);
           PoolLayer([28-filterSize+1,28-filterSize+1,numFilters], 2);
-          FullyConLayer(13*13*numFilters, 10, @softmax)];
+          FullyConLayer(13*13*numFilters, 10, @softmax)};
 network = CNN(layers, learningRate, batchSize);
 
 [lengthTrainingData, ~] = size(trainingData);
@@ -30,7 +31,7 @@ for num = 1:epochs
             loss = loss - log(actual(labels(it)));   % cross entropy loss
             network = network.backwards(target(labels(it)), actual);
         end
-        trainingPerf((num-1)*numBatches+i+1) = avg/batchSize;
+        trainingPerf((num-1)*numBatches+i+1) = loss/batchSize;
         network = network.networkEndBatch();
     end
 end
