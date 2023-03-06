@@ -1,9 +1,9 @@
-% trainingData = readmatrix('train.csv');
-% labels = uint8(trainingData(:,2))+1; % these are from 1-10!!!!
-% trainingData = trainingData(:,3:end)/255;
-% testData = trainingData(50001:end,:);
-% trainingData = trainingData(1:50000,:);
-% testLabels = labels(50001:end);
+trainingData = readmatrix('train.csv');
+labels = uint8(trainingData(:,2))+1; % these are from 1-10!!!!
+trainingData = trainingData(:,3:end)/255;
+testData = trainingData(50001:end,:);
+trainingData = trainingData(1:50000,:);
+testLabels = labels(50001:end);
 
 epochs = 1;
 batchSize = 100;
@@ -29,14 +29,13 @@ for num = 1:epochs
             it = i*batchSize+j;
             [network,actual] = network.feedForward(reshape(trainingData(it,:),28,28));
             loss = loss - log(actual(labels(it)));   % cross entropy loss
-            network = network.backwards(target(labels(it)), actual);
+            network = network.backwards(target(:, labels(it)), actual);
         end
         trainingPerf((num-1)*numBatches+i+1) = loss/batchSize;
         network = network.networkEndBatch();
     end
 end
 plot(trainingPerf)
-
 
 % this should happen per epoch but putting it here for now
 loss = 0;
