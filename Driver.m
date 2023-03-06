@@ -11,8 +11,8 @@ learningRate = 0.05;
 numFilters = 2;
 filterSize = 3;
 
-layers = {ConvLayer(filterSize, numFilters, @relu, [28 28]);
-          PoolLayer([28-filterSize+1,28-filterSize+1,numFilters], 2);
+layers = {ConvLayer(filterSize, numFilters, @relu, [28 28])...
+          PoolLayer([28-filterSize+1,28-filterSize+1,numFilters], 2)...
           FullyConLayer(13*13*numFilters, 10, @softmax)};
 network = CNN(layers, learningRate, batchSize);
 

@@ -5,6 +5,12 @@ classdef ConvLayer < Layer
         numFilters % size of conv layer
     end
 
+    methods (Static)
+        function saymyname()
+            disp("conv");
+        end
+    end
+
     methods
         function obj = ConvLayer(filterSize,numFilters,transfer,inputSize)
             obj = obj@Layer(filterSize^2,numFilters,transfer);
@@ -38,10 +44,10 @@ classdef ConvLayer < Layer
             
             % turns out the gradient of the bias is just the sum of the
             % next layers' gradient?
-            % size(sum(prevSensitivity,[1,2]))
-            b = permute(repmat(sum(prevSensitivity,[1,2]),[1,size(obj.biasVector,2),size(obj.biasVector,1)]),[3 2 1]);
+            size(sum(prevSensitivity,[1,2]))
+            b = repmat(sum(prevSensitivity,[1,2]),[size(obj.biasVector,1),size(obj.biasVector,2),1]);
             % size(b)
-            b = reshape(b, [26, 26, obj.numFilters]);        % this line might very well be problematic
+            % b = reshape(b, [26, 26, obj.numFilters]);        % this line might very well be problematic
 %             obj.batchNewBiases = obj.batchNewBiases+permute(repmat(sum(prevSensitivity,[1,2]),[1,size(obj.biasVector,2),size(obj.biasVector,1)]),[3 2 1]);]
             obj.batchNewBiases = obj.batchNewBiases+b;
         end

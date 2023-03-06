@@ -2,6 +2,12 @@ classdef FullyConLayer < Layer
     %UNTITLED5 Summary of this class goes here
     %   Detailed explanation goes here
 
+    methods (Static)
+        function saymyname()
+            disp("fully connected\n");
+        end
+    end
+
     methods
         function obj = FullyConLayer(inputSize, outputSize, transfer)
            obj = obj@Layer(inputSize,outputSize,transfer);

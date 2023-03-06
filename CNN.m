@@ -16,12 +16,13 @@ classdef CNN
         function [obj, output] = feedForward(obj, input)
             [obj.layers{1}, temp] = obj.layers{1}.forward(input);
             for i = 2:length(obj.layers)
-                [obj.layers{1}, temp] = obj.layers{i}.forward(temp);
+                [obj.layers{i}, temp] = obj.layers{i}.forward(temp);
             end
             output = temp;
         end
 
         function obj = backwards(obj, target, actual)
+
             obj.layers{end} = obj.layers{end}.calcLastSensitivity(target-actual).updateLayer();
             for i = length(obj.layers)-1:-1:2
                 obj.layers{i} = obj.layers{i}.calcSensitivity(obj.layers{i+1}.sensitivity, obj.layers{i+1}.weightMatrix);

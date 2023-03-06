@@ -62,6 +62,6 @@ classdef Layer < handle
         calcSensitivity(obj, varargin)
         
         updateLayer(obj, varargin)
-
+        saymyname()
     end
 end
