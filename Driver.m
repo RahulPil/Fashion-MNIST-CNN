@@ -1,14 +1,14 @@
-% trainingData = readmatrix('train.csv');
-% labels = uint8(trainingData(:,2))+1; % these are from 1-10!!!!
-% trainingData = trainingData(:,3:end)/255;
-% testData = trainingData(50001:end,:);
-% trainingData = trainingData(1:50000,:);
-% testLabels = labels(50001:end);
+trainingData = readmatrix('train.csv');
+labels = uint8(trainingData(:,2))+1; % these are from 1-10!!!!
+trainingData = trainingData(:,3:end)/255;
+testData = trainingData(50001:end,:);
+trainingData = trainingData(1:50000,:);
+testLabels = labels(50001:end);
 
-epochs = 1;
+epochs = 3;
 batchSize = 100;
 learningRate = 0.001;
-numFilters = 4;
+numFilters = 8;
 filterSize = 3;
 
 layers = {ConvLayer(filterSize, numFilters, @relu, [28 28])...
@@ -58,7 +58,7 @@ for num = 1:epochs
         loss = 0;
         for j = 1:batchSize
             it = i*batchSize+j;
-            [network,actual] = network.feedForward(reshape(trainingData(it,:),28,28));
+            [network,actual] = network.feedForward(repmat(reshape(trainingData(it,:),28,28),[1,1,numFilters]));
             loss = loss - log(actual(labels(it)));   % cross entropy loss
             network = network.backwards(target(:, labels(it)), actual);
         end
