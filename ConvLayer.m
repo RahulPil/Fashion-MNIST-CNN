@@ -39,7 +39,7 @@ classdef ConvLayer < Layer
             % turns out the gradient of the bias is just the sum of the
             % next layers' gradient?
             b = permute(repmat(sum(prevSensitivity,[1,2]),[1,size(obj.biasVector,2),size(obj.biasVector,1)]),[3 2 1]);
-            b = reshape(b, [26, 26, 8]);        % this line might very well be problematic
+            b = reshape(b, [26, 26, obj.numFilters]);        % this line might very well be problematic
 %             obj.batchNewBiases = obj.batchNewBiases+permute(repmat(sum(prevSensitivity,[1,2]),[1,size(obj.biasVector,2),size(obj.biasVector,1)]),[3 2 1]);]
             obj.batchNewBiases = obj.batchNewBiases+b;
         end

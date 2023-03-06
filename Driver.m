@@ -8,7 +8,7 @@
 epochs = 1;
 batchSize = 100;
 learningRate = 0.05;
-numFilters = 1;
+numFilters = 2;
 filterSize = 3;
 
 layers = {ConvLayer(filterSize, numFilters, @relu, [28 28]);
