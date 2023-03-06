@@ -4,15 +4,15 @@ classdef PoolLayer < Layer
         inputSize
         outputSize
         stride
-        lastInput
         % newly created property for calculating the sensitivity
         outputInds
     end
 
     methods
         function obj = PoolLayer(inputSize,stride)
+            obj = obj@Layer(1,1,0);
             obj.inputSize = inputSize;
-            obj.outputSize = [inputSize(1)/stride inputSize(2)/stride];
+            obj.outputSize = [inputSize(1)/stride inputSize(2)/stride inputSize(3)];
             obj.stride = stride;
         end
         
@@ -21,15 +21,17 @@ classdef PoolLayer < Layer
         function [obj, output] = forward(obj,input)
             output = zeros(obj.outputSize);
             obj.outputInds = zeros(obj.inputSize);
-            for row = 1:obj.outputSize(1)
-                for col = 1: obj.outputSize(2)
-                    i = (row-1)*obj.stride;
-                    j = (col-1)*obj.stride;
-                    window = input(i+1:i+obj.stride,j+1:j+obj.stride);
-                    [colMax, colInd] = max(window);
-                    [actualMax, rowInd] = max(colMax);
-                    obj.outputInds((row-1)*obj.stride+rowInd,(col-1)*obj.stride+colInd) = 1;
-                    output(row,col) = actualMax;
+            for channel=1:obj.outputSize(3)
+                for row = 1:obj.outputSize(1)
+                    for col = 1: obj.outputSize(2)
+                        i = (row-1)*obj.stride;
+                        j = (col-1)*obj.stride;
+                        window = input(i+1:i+obj.stride,j+1:j+obj.stride,channel);
+                        [colMax, colInd] = max(window);
+                        [actualMax, rowInd] = max(colMax);
+                        obj.outputInds((row-1)*obj.stride+rowInd,(col-1)*obj.stride+colInd,channel) = 1;
+                        output(row,col,channel) = actualMax;
+                    end
                 end
             end
             obj.lastInput = input;
@@ -53,11 +55,10 @@ classdef PoolLayer < Layer
         %     obj.lastInput = input;
         % end
         
-        %ngl this was a bitch and a half to figure out not hard just
-        %annoying as fuck for some reason. Idk
-        % i think this code should work... hopefully
+        % I *think* we have to compute the gradient of the previous layer
+        % then we just take only the winning elements of that
         function s = calcSensitivity(obj,prevSensitivity,prevWeight)
-            s = obj.outputInds.*prevWeight'*prevSensitivity;
+            s = obj.outputInds.*reshape(prevWeight'*prevSensitivity,size(obj.outputInds));
         end
 
         % old

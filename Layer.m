@@ -1,11 +1,5 @@
-% not sure if < handle is needed for this because it isnt needed for
-% defining a superclass but is rather used for indicating that the class's
-% objects are passed by reference meaning that multiple variables can
-% refer to the same object. 
-% basically if we modify an object that is a subclass of this super class
-% then i think it may affect other subclass objects of this superclass 
-% idk 1:10am thoughts really be hitting hard
-classdef Layer < handle
+
+classdef Layer < matlab.mixin.Heterogeneous
     properties
         weightMatrix
         biasVector

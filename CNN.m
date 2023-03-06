@@ -14,9 +14,9 @@ classdef CNN
         end
 
         function [obj, output] = feedForward(obj, input)
-            [obj, temp] = obj.layers(1).forward(input);
+            [~, temp] = obj.layers(1).forward(input);
             for i = 2:length(obj.layers)
-                [obj, temp] = obj.layers(i).forward(temp);
+                [~, temp] = obj.layers(i).forward(temp);
             end
             output = temp;
         end

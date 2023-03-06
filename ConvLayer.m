@@ -6,19 +6,18 @@ classdef ConvLayer < Layer
     end
 
     methods
-        function obj = ConvLayer(inputSize,outputSize,transfer,numFilters)
-            obj = obj@Layer(inputSize,outputSize*numFilters,transfer);
-            obj.weightMatrix = reshape(obj.weightMatrix,[inputSize,outputSize,numFilters]);
-            obj.biasVector = reshape(obj.biasVector,[outputSize,numFilters]);
+        function obj = ConvLayer(filterSize,numFilters,transfer,inputSize)
+            obj = obj@Layer(filterSize^2,numFilters,transfer);
+            obj.weightMatrix = reshape(obj.weightMatrix,[filterSize,filterSize,numFilters]);
             obj.numFilters = numFilters;
+            obj.biasVector = permute(repmat(obj.biasVector,[1,inputSize(2)-filterSize+1,inputSize(1)-filterSize+1]),[3 2 1]);
         end
 
         function [obj, output] = forward(obj, input)
-            output = zeros(size(input,1)-size(obj.weightMatrix,1)+1,size(input,2)-size(obj.weightMatrix,2)+1,obj.numFilters);
-            for i =1:obj.numFilters
-                output(:,:,i) = transfer(conv2(input,obj.weightMatrix(:,:,i)));
-            end
-            obj.lastInput = input;
+            obj.lastInput = convn(repmat(input,[1,1,obj.numFilters]),obj.weightMatrix,'valid');
+            size(obj.lastInput)
+            size(obj.biasVector)
+            output = obj.transferFunc(obj.lastInput+obj.biasVector);
         end
 
         function [obj, s] = calcSensitivity(obj, prevSensitivity,~)
@@ -29,17 +28,17 @@ classdef ConvLayer < Layer
             % function here? because we could but... idk i thought it might
             % be redundant but it might not be if we arent dealing with any
             % max pooling layers in the network right?
-            s = conv2(prevSensitivity, rot90(obj.weightMatrix, 2), 'full');
+            s = convn(repmat(prevSensitivity,[1,1,obj.numFilters]), rot90(obj.weightMatrix, 2), 'full');
             obj.sensitivity = s;
         end
 
         function obj = updateLayer(obj, prevSensitivity)
             % add gradient dLoss/dFilter to batch gradient
-            obj.batchNewWeights = obj.batchNewWeights + conv2(obj.lastInput, prevSensitivity);
+            obj.batchNewWeights = obj.batchNewWeights + convn(obj.lastInput, prevSensitivity,'valid');
             
             % turns out the gradient of the bias is just the sum of the
             % next layers' gradient?
-            obj.batchNewBiases = obj.batchNewBiases+sum(prevSensitivity);
+            obj.batchNewBiases = obj.batchNewBiases+permute(repmat(sum(prevSensitivity,[1,2]),[1,size(obj.biasVector,2),size(obj.biasVector,1)]),[3 2 1]);
         end
     end
 end

@@ -8,9 +8,9 @@ classdef FullyConLayer < Layer
         end
 
         function [obj, output] = forward(obj,input)
-            input = reshape(input,[[],1]);
+            input = reshape(input,[],1);
             obj.lastInput = input;
-            output = obj.transfer(obj.weightMatrix*input+obj.biasVector);
+            output = obj.transferFunc(obj.weightMatrix*input+obj.biasVector);
         end
         
         % I think the derivative of the loss wrt the softmax output is just
@@ -24,8 +24,13 @@ classdef FullyConLayer < Layer
         end
 
         function obj = updateLayer(obj)
+            size(obj.sensitivity)
+            size(obj.lastInput')
             obj.batchNewWeights = obj.batchNewWeights + obj.sensitivity*obj.lastInput';
             obj.batchNewBiases = obj.batchNewBiases + obj.sensitivity;
+        end
+
+        function obj = calcSensitivity(obj)
         end
     end
 end

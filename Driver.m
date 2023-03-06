@@ -1,28 +1,47 @@
-trainingData = readmatrix('train.csv');
-
+% trainingData = readmatrix('train.csv');
+% labels = uint8(trainingData(:,2))+1; % these are from 1-10!!!!
+% trainingData = uint8(trainingData(:,3:end)/255);
+% testData = trainingData(50001:end,:);
+% trainingData = trainingData(1:50000,:);
+% testLabels = labels(50001:end);
 epochs = 2;
-batchSize = 32;
+batchSize = 100;
 learningRate = 0.05;
+numFilters = 8;
+filterSize = 3;
 
-%TODO: Gotta change stuff from other stuff to one-hot
-%TODO: Test-train split???
-
-
-network = CNN([ConvLayer(784, outputsize, @relu, numFilters), PoolLayer(inputsize, stride), FullyConLayer(inputsize, 10, @softmax)], learningRate, batchSize);
-%TODO: replace dummy values w/ real thing in layer ctors
+layers = [ConvLayer(filterSize, numFilters, @relu, [28 28]);
+          PoolLayer([28-filterSize+1,28-filterSize+1,numFilters], 2);
+          FullyConLayer(13*13*numFilters, 10, @softmax)];
+network = CNN(layers, learningRate, batchSize);
 
 [lengthTrainingData, ~] = size(trainingData);
 
 numBatches = floor(lengthTrainingData/batchSize);
+target = eye(10);
 
+trainingPerf = zeros(numBatches*epochs);
 for num = 1:epochs
     for i = 0:numBatches-1
+        loss = 0;
         for j = 1:batchSize
-            network = network.feedForward(i*batchSize+j,3:end); %TODO: change which columns are used if we change the training data to one hot?
-            network = network.backwards(target, actual); %TODO: fill in w/ actual stuff
+            it = i*batchSize+j;
+            [network,actual] = network.feedForward(reshape(trainingData(it,:),28,28));
+            loss = loss - log(actual(labels(it)));   % cross entropy loss
+            network = network.backwards(target(labels(it)), actual);
         end
+        trainingPerf((num-1)*numBatches+i+1) = avg/batchSize;
         network = network.networkEndBatch();
     end
 end
+plot(trainingPerf)
 
-%TODO: now test it!
+
+% this should happen per epoch but putting it here for now
+loss = 0;
+for i=1:size(testData,1)
+    [network,actual] = network.feedForward(testData(i,:));
+    loss = loss - log(actual(testLabels(i)));
+end
+loss = loss/size(testData,1)
+
