@@ -40,9 +40,15 @@ plot(trainingPerf)
 
 % this should happen per epoch but putting it here for now
 loss = 0;
+acc = 0;
 for i=1:size(testData,1)
     [network,actual] = network.feedForward(reshape(testData(i,:),28,28));
     loss = loss - log(actual(testLabels(i)));
+    [m,ind] = max(actual);
+    if ind==testLabels(i)
+        acc = acc+1;
+    end
 end
 loss = loss/size(testData,1)
+acc = acc/length(testLabels)
 
