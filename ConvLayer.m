@@ -38,10 +38,16 @@ classdef ConvLayer < Layer
             % function here? because we could but... idk i thought it might
             % be redundant but it might not be if we arent dealing with any
             % max pooling layers in the network right?
-            size(repmat(prevSensitivity,[1,1,obj.numFilters]))
-            size(rot90(obj.weightMatrix, 2))
-            s = convn(repmat(prevSensitivity,[1,1,obj.numFilters]), rot90(obj.weightMatrix, 2), 'full');
-            size(s)
+            r = rot90(obj.weightMatrix, 2);
+            if size(prevSensitivity,3)==1
+                p = repmat(prevSensitivity,[1,1,obj.numFilters]);
+            else
+                p = prevSensitivity;
+            end
+            s = zeros(size(p)+size(obj.weightMatrix)-[1 1 obj.numFilters]);
+            for i=1:obj.numFilters
+                s(:,:,i) = conv2(p(:,:,i), r(:,:,i), 'full');
+            end
             obj.sensitivity = s;
         end
 
