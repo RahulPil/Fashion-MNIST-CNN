@@ -12,8 +12,8 @@ classdef ConvLayer < Layer
     end
 
     methods
-        function obj = ConvLayer(filterSize,numFilters,transfer,inputSize)
-            obj = obj@Layer(filterSize^2,numFilters,transfer);
+        function obj = ConvLayer(filterSize,numFilters,transfer,batchSize,inputSize)
+            obj = obj@Layer(filterSize^2,numFilters,transfer, batchSize);
             obj.weightMatrix = reshape(obj.weightMatrix,[filterSize,filterSize,numFilters]);
             obj.numFilters = numFilters;
             obj.biasVector = permute(repmat(obj.biasVector,[1,inputSize(2)-filterSize+1,inputSize(1)-filterSize+1]),[3 2 1]);

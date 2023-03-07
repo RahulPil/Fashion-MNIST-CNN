@@ -17,7 +17,7 @@ classdef PoolLayer < Layer
 
     methods
         function obj = PoolLayer(inputSize,stride)
-            obj = obj@Layer(1,1,0);
+            obj = obj@Layer(1,1,0,0);
             obj.inputSize = inputSize;
             obj.outputSize = [inputSize(1)/stride inputSize(2)/stride inputSize(3)];
             obj.stride = stride;

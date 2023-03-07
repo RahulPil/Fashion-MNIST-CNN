@@ -9,8 +9,8 @@ classdef FullyConLayer < Layer
     end
 
     methods
-        function obj = FullyConLayer(inputSize, outputSize, transfer)
-           obj = obj@Layer(inputSize,outputSize,transfer);
+        function obj = FullyConLayer(inputSize, outputSize, transfer, batchSize)
+           obj = obj@Layer(inputSize,outputSize,transfer, batchSize);
         end
 
         function [obj, output] = forward(obj,input)

@@ -7,14 +7,22 @@ classdef Layer < handle
         learningRate
         lastInput
         sensitivity
+        batchSize
+
+        prevWeightDelta
+        prevPrevWeightDelta
 
         %% these cannot be deleted as they are required to accumulate the
         %% change in gradient
         batchNewWeights
         batchNewBiases
+
+        % in case we have to discard an update
+        oldWeight
+        oldBias
     end
     methods
-        function obj = Layer(inputSize, outputSize,transfer)
+        function obj = Layer(inputSize, outputSize,transfer, batchsize)
             % initializes the weight matrix using Kaiming He initialization 
             % as seen in https://arxiv.org/pdf/1502.01852.pdf
             % (zero-mean normal dist with stdev of sqrt(2/inputSize))
@@ -23,6 +31,9 @@ classdef Layer < handle
             obj.batchNewWeights = zeros(size(obj.weightMatrix));
             obj.biasVector = zeros(outputSize,1);
             obj.batchNewBiases = zeros(size(obj.biasVector));
+            obj.batchSize = batchsize;
+            obj.prevWeightDelta = 0;
+            obj.prevPrevWeightDelta = 0;
         end
         
         % too braindead to understand what the fuck this thing does but
@@ -31,10 +42,31 @@ classdef Layer < handle
         % put this here because its not a virtual method but at the same
         % time i am unaware how the actual purpose of this function and why
         % we need to carry out the batchNewWeights calculation like this.
-        function obj = endBatch(obj, batchSize,learningRate)
-            obj.weightMatrix = obj.weightMatrix - (learningRate/batchSize)*obj.batchNewWeights;
-            obj.biasVector = obj.biasVector - (learningRate/batchSize)*obj.batchNewBiases;
+        function obj = endBatch(obj, learningRate, momentumFactor)
+            obj.oldWeight = obj.weightMatrix;
+            obj.oldBias = obj.biasVector;
 
+            weightDelta = momentumFactor*obj.prevWeightDelta-(1-momentumFactor)*(learningRate/obj.batchSize)*obj.batchNewWeights;
+
+            obj.weightMatrix = obj.weightMatrix + weightDelta;
+            obj.biasVector = obj.biasVector - (learningRate/obj.batchSize)*obj.batchNewBiases;
+
+            obj.batchNewWeights(:) = 0;
+            obj.batchNewBiases(:) = 0;
+            obj.prevPrevWeightDelta = obj.prevWeightDelta;
+            obj.prevWeightDelta = weightDelta;
+        end
+
+        function obj = undoUpdate(obj)
+            obj.weightMatrix = obj.oldWeight;
+            obj.biasVector = obj.oldBias;
+            obj.prevWeightDelta = obj.prevPrevWeightDelta;
+
+            obj.batchNewWeights(:) = 0;
+            obj.batchNewBiases(:) = 0;
+        end
+
+        function obj = resetBatch(obj)
             obj.batchNewWeights(:) = 0;
             obj.batchNewBiases(:) = 0;
         end

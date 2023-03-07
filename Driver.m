@@ -1,21 +1,22 @@
-trainingData = readmatrix('train.csv');
-labels = uint8(trainingData(:,2))+1; % these are from 1-10!!!!
-trainingData = trainingData(:,3:end)/255;
-testData = trainingData(50001:end,:);
-trainingData = trainingData(1:50000,:);
-testLabels = labels(50001:end);
+% trainingData = readmatrix('train.csv');
+% labels = uint8(trainingData(:,2))+1; % these are from 1-10!!!!
+% trainingData = trainingData(:,3:end)/255;
+% testData = trainingData(50001:end,:);
+% trainingData = trainingData(1:50000,:);
+% testLabels = labels(50001:end);
 
 epochs = 2;
 batchSize = 100;
-learningRate = 0.001;
+learningRate = 0.05;
+momentumFactor = 0.8;
 numFilters = 10;
 filterSize = 3;
 
-layers = {ConvLayer(filterSize, numFilters, @relu, [28 28])...
-          ConvLayer(filterSize, numFilters, @relu, [26 26])...
+layers = {ConvLayer(filterSize, numFilters, @relu, 32, [28 28])...
+          ConvLayer(filterSize, numFilters, @relu, 32, [26 26])...
           PoolLayer([26-filterSize+1,26-filterSize+1,numFilters], 2)...
-          FullyConLayer(12*12*numFilters, 10, @softmax)};
-network = CNN(layers, learningRate, batchSize);
+          FullyConLayer(12*12*numFilters, 10, @softmax, 32)};
+network = CNN(layers, learningRate, momentumFactor, batchSize);
 
 bestnet = network;
 bestloss = 10000;
@@ -25,9 +26,9 @@ bestloss = 10000;
 numBatches = floor(lengthTrainingData/batchSize);
 target = eye(10);
 
-h = animatedline;
+h = animatedline('Color', 'b');
 axis([0, epochs*numBatches+10, 0, inf]);
-xlabel('Batches');
+xlabel('Batch');
 ylabel('Loss');
 
 for num = 1:epochs
@@ -45,10 +46,16 @@ for num = 1:epochs
             bestloss = loss;
         end
 
-        network = network.networkEndBatch();
+        [network, undo] = network.networkEndBatch(loss, (num-1)*numBatches+i+1);
+        
+        if ~undo
+            addpoints(h, (num-1)*numBatches+i+1, loss);
+            drawnow limitrate
+        end
 
-        addpoints(h, [(num-1)*numBatches+i+1], [loss]);
-        drawnow limitrate
+        if mod(i,100) == 0
+            disp(i);
+        end
     end
 end
 
