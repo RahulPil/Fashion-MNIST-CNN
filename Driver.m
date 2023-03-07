@@ -5,7 +5,7 @@ testData = trainingData(50001:end,:);
 trainingData = trainingData(1:50000,:);
 testLabels = labels(50001:end);
 
-epochs = 20;
+epochs = 2;
 batchSize = 100;
 learningRate = 0.001;
 numFilters = 10;
@@ -25,11 +25,13 @@ bestloss = 10000;
 numBatches = floor(lengthTrainingData/batchSize);
 target = eye(10);
 
-trainingPerf = zeros(numBatches*epochs,1);
+h = animatedline;
+axis([0, epochs*numBatches+10, 0, inf]);
+xlabel('Batches');
+ylabel('Loss');
+
 for num = 1:epochs
-    disp(num);
     for i = 0:numBatches-1
-        disp(i);
         loss = 0;
         for j = 1:batchSize
             it = i*batchSize+j;
@@ -43,11 +45,12 @@ for num = 1:epochs
             bestloss = loss;
         end
 
-        trainingPerf((num-1)*numBatches+i+1) = loss;
         network = network.networkEndBatch();
+
+        addpoints(h, [(num-1)*numBatches+i+1], [loss]);
+        drawnow limitrate
     end
 end
-plot(trainingPerf)
 
 % this should happen per epoch but putting it here for now
 loss = 0;
