@@ -7,7 +7,8 @@ testLabels = labels(50001:end);
 
 epochs = 2;
 batchSize = 100;
-learningRate = 0.001;
+learningRate = 0.05;
+decayRate = 0.002; %a rate of 0 gives no decay
 numFilters = 10;
 filterSize = 3;
 
@@ -16,7 +17,7 @@ layers = {ConvLayer(filterSize, numFilters, @relu, [28 28])...
           PoolLayer([26-filterSize+1,26-filterSize+1,numFilters], 2)...
           FullyConLayer2(12*12*numFilters, 50, @relu)...
           FullyConLayer(50, 10, @softmax)};
-network = CNN(layers, learningRate, batchSize);
+network = CNN(layers, learningRate, batchSize, decayRate);
 
 bestnet = network;
 bestloss = 10000;
@@ -46,7 +47,7 @@ for num = 1:epochs
             bestloss = loss;
         end
 
-        network = network.networkEndBatch();
+        network = network.networkEndBatch((num-1)*numBatches+i+1);
 
         addpoints(h, [(num-1)*numBatches+i+1], [loss]);
         drawnow limitrate
