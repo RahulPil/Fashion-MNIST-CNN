@@ -19,6 +19,7 @@ classdef PoolLayer < Layer
     methods
         function obj = PoolLayer(inputSize,stride)
             obj = obj@Layer(1,1,0);
+            disp("make")
 
             obj.inputSize = inputSize;
             obj.z = zeros(2*ceil(inputSize(1:2)/2));
