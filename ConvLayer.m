@@ -2,7 +2,7 @@ classdef ConvLayer < Layer
     % convolutional layer
 
     properties
-        numFilters % size of conv layer
+        outputSize
     end
 
     methods (Static)
@@ -12,20 +12,20 @@ classdef ConvLayer < Layer
     end
 
     methods
-        function obj = ConvLayer(filterSize,numFilters,transfer,inputSize)
-            obj = obj@Layer(filterSize^2,numFilters,transfer);
-            obj.weightMatrix = reshape(obj.weightMatrix,[filterSize,filterSize,numFilters]);
-            obj.numFilters = numFilters;
-            obj.biasVector = permute(repmat(obj.biasVector,[1,inputSize(2)-filterSize+1,inputSize(1)-filterSize+1]),[3 2 1]);
+        function obj = ConvLayer(inputSize,outputSize,filterSize,transfer)
+            obj = obj@Layer(filterSize(1)*filterSize(2)*filterSize(3),outputSize(3),transfer);
+            obj.weightMatrix = reshape(obj.weightMatrix,[filterSize outputSize(3)]);
+            obj.outputSize = outputSize;
+            obj.biasVector = permute(repmat(obj.biasVector,[1,inputSize(2)-filterSize(1)+1,inputSize(1)-filterSize(2)+1]),[3 2 1]);
             obj.batchNewBiases = zeros(size(obj.biasVector));
             obj.batchNewWeights = zeros(size(obj.weightMatrix));
         end
 
         function [obj, output] = forward(obj, input)
             obj.lastInput = input;
-            temp = zeros(size(obj.lastInput)-size(obj.weightMatrix)+[1 1 obj.numFilters]);
-            for i=1:obj.numFilters
-                temp(:,:,i) = conv2(obj.lastInput(:,:,i),obj.weightMatrix(:,:,i),'valid');
+            temp = zeros(obj.outputSize);
+            for i=1:obj.outputSize(3)
+                temp(:,:,i) = convn(obj.lastInput,obj.weightMatrix(:,:,:,i),'valid');
             end
             output = obj.transferFunc(temp+obj.biasVector);
         end
@@ -39,14 +39,10 @@ classdef ConvLayer < Layer
             % be redundant but it might not be if we arent dealing with any
             % max pooling layers in the network right?
             r = rot90(obj.weightMatrix, 2);
-            if size(prevSensitivity,3)==1
-                p = repmat(prevSensitivity,[1,1,obj.numFilters]);
-            else
-                p = prevSensitivity;
-            end
-            s = zeros(size(p)+size(obj.weightMatrix)-[1 1 obj.numFilters]);
-            for i=1:obj.numFilters
-                s(:,:,i) = conv2(p(:,:,i), r(:,:,i), 'full');
+            s = zeros(obj.inputSize);
+            for i=1:obj.outputSize(3)
+                c = convn(prevSensitivity, r(:,:,:,i), 'full');
+                s(:,:,i) = c(:,:,(size(weightMatrix(3))-1)/2+1);
             end
             obj.sensitivity = s;
         end
@@ -54,8 +50,8 @@ classdef ConvLayer < Layer
         function obj = updateLayer(obj, prevSensitivity)
             % add gradient dLoss/dFilter to batch gradient
 
-            for i=1:obj.numFilters
-                obj.batchNewWeights(:,:,i) = obj.batchNewWeights(:,:,i) + conv2(obj.lastInput(:,:,i),prevSensitivity(:,:,i),'valid');
+            for i=1:obj.outputSize(3)
+                obj.batchNewWeights(:,:,:,i) = obj.batchNewWeights(:,:,:,i) + convn(obj.lastInput,prevSensitivity(:,:,i),'valid');
             end
 
             
