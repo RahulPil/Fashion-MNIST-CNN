@@ -1,12 +1,13 @@
-% trainingData = readmatrix('train.csv');
-% labels = uint8(trainingData(:,2))+1; % these are from 1-10!!!!
-% trainingData = trainingData(:,3:end)/255;
-% testData = trainingData(50001:end,:);
-% trainingData = trainingData(1:50000,:);
-% testLabels = labels(50001:end);
+trainingData = readmatrix('train.csv');
+labels = uint8(trainingData(:,2))+1; % these are from 1-10!!!!
+trainingData = trainingData(:,3:end)/255;
+testData = trainingData(50001:end,:);
+trainingData = trainingData(1:50000,:);
+testLabels = labels(50001:end);
 
-epochs = 20;
+epochs = 2;
 batchSize = 100;
+decayRate = 0.002;
 learningRate = 0.001;
 conv1 = ConvLayer([28 28],[26,26,15],[3,3,1], @relu);
 pool1 = PoolLayer(conv1.outputSize, 2);
@@ -17,7 +18,8 @@ fullycon1 = FullyConLayer(4*4*64, 100, @relu);
 fullycon2 = FullyConLayer(100, 10, @softmax);
 layers = {conv1 pool1 conv2 pool2 conv2 fullycon1 fullycon2};
           
-network = CNN(layers, learningRate, batchSize);
+network = CNN(layers, learningRate, batchSize,decayRate);
+
 
 bestnet = network;
 bestloss = 10000;
@@ -27,11 +29,13 @@ bestloss = 10000;
 numBatches = floor(lengthTrainingData/batchSize);
 target = eye(10);
 
-trainingPerf = zeros(numBatches*epochs,1);
+h = animatedline;
+axis([0, epochs*numBatches+10, 0, inf]);
+xlabel('Batches');
+ylabel('Loss');
+
 for num = 1:epochs
-    disp(num);
     for i = 0:numBatches-1
-        disp(i);
         loss = 0;
         for j = 1:batchSize
             it = i*batchSize+j;
@@ -45,11 +49,12 @@ for num = 1:epochs
             bestloss = loss;
         end
 
-        trainingPerf((num-1)*numBatches+i+1) = loss;
-        network = network.networkEndBatch();
+        network = network.networkEndBatch((num-1)*numBatches+i+1);
+
+        addpoints(h, [(num-1)*numBatches+i+1], [loss]);
+        drawnow limitrate
     end
 end
-plot(trainingPerf)
 
 % this should happen per epoch but putting it here for now
 loss = 0;

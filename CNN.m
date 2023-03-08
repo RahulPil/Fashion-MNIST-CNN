@@ -2,15 +2,17 @@ classdef CNN
     properties
         layers
         learningRate
+        decayRate
         batchSize
         batchIncrementor
     end
 
     methods 
-        function obj = CNN(layersList,theLearningRate,batchSize)
+        function obj = CNN(layersList,theLearningRate,theBatchSize,theDecayRate)
             obj.layers = layersList;
             obj.learningRate = theLearningRate;
-            obj.batchSize = batchSize;
+            obj.batchSize = theBatchSize;
+            obj.decayRate = theDecayRate;
         end
 
         function [obj, output] = feedForward(obj, input)
@@ -32,9 +34,10 @@ classdef CNN
             obj.layers{1} = obj.layers{1}.updateLayer(obj.layers{2}.sensitivity);
         end
 
-        function obj = networkEndBatch(obj)
+        function obj = networkEndBatch(obj, batchNum)
+            newLearningRate = (1/(1+obj.decayRate*batchNum))*obj.learningRate;
             for i = 1:length(obj.layers)
-                obj.layers{i} = obj.layers{i}.endBatch(obj.batchSize,obj.learningRate);
+                obj.layers{i} = obj.layers{i}.endBatch(obj.batchSize,newLearningRate);
             end
             obj.batchIncrementor = 0;
         end
