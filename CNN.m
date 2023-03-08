@@ -1,4 +1,4 @@
-classdef CNN
+classdef CNN < matlab.mixin.Copyable
     properties
         layers
         learningRate
@@ -40,6 +40,12 @@ classdef CNN
                 obj.layers{i} = obj.layers{i}.endBatch(obj.batchSize,newLearningRate);
             end
             obj.batchIncrementor = 0;
+        end
+    end
+    methods (Access = protected)
+        function cp = copyElement(obj)
+            cp = CNN(0,0,0,0);
+            cp.layers = arrayfun(@(x) copy(x),obj.layers);
         end
     end
 end

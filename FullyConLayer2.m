@@ -34,8 +34,8 @@ classdef FullyConLayer2 < Layer
             obj.batchNewBiases = obj.batchNewBiases + obj.sensitivity;
         end
 
-        function obj = calcSensitivity(obj, prevWeight, prevSensitivity)     
-            obj.sensitivity = obj.direlu(obj.netInput).*(prevSensitivity'*prevWeight);
+        function obj = calcSensitivity(obj, prevWeight, prevSensitivity) 
+            obj.sensitivity = diag(obj.direlu(obj.netInput))*(prevSensitivity'*prevWeight);
         end
     end
 
@@ -43,6 +43,13 @@ classdef FullyConLayer2 < Layer
         function output = direlu(~, input)
             b = logical(input>0);
             output = double(b);
+        end
+    end
+    methods (Access=protected)
+        function cp = copyElement(obj)
+            cp = FullyConLayer2(size(obj.weightMatrix,1),size(obj,weightMatrix,1),obj.transferFunc);
+            cp.weightMatrix = obj.weightMatrix;
+            cp.biasVector = obj.biasVector;
         end
     end
 

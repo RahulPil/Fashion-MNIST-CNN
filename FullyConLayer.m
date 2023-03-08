@@ -37,4 +37,12 @@ classdef FullyConLayer < Layer
         function obj = calcSensitivity(obj)
         end
     end
+        methods (Access=protected)
+        function cp = copyElement(obj)
+            cp = FullyConLayer(size(obj.weightMatrix,1),size(obj,weightMatrix,1),obj.transferFunc);
+            cp.weightMatrix = obj.weightMatrix;
+            cp.biasVector = obj.biasVector;
+        end
+    
+    end
 end

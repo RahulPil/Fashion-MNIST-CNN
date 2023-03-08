@@ -39,17 +39,16 @@ classdef ConvLayer < Layer
             % be redundant but it might not be if we arent dealing with any
             % max pooling layers in the network right?
             r = rot90(obj.weightMatrix, 2);
-            s = zeros(obj.inputSize);
-            for i=1:obj.outputSize(3)
+            s = zeros(size(obj.lastInput));
+            for i=1:size(obj.lastInput,3)
                 c = convn(prevSensitivity, r(:,:,:,i), 'full');
-                s(:,:,i) = c(:,:,(size(weightMatrix(3))-1)/2+1);
+                s(:,:,i) = c(:,:,(length(obj.weightMatrix(3))-1)/2+1);
             end
             obj.sensitivity = s;
         end
 
         function obj = updateLayer(obj, prevSensitivity)
             % add gradient dLoss/dFilter to batch gradient
-
             for i=1:obj.outputSize(3)
                 obj.batchNewWeights(:,:,:,i) = obj.batchNewWeights(:,:,:,i) + convn(obj.lastInput,prevSensitivity(:,:,i),'valid');
             end
@@ -62,6 +61,14 @@ classdef ConvLayer < Layer
             % b = reshape(b, [26, 26, obj.numFilters]);        % this line might very well be problematic
 %             obj.batchNewBiases = obj.batchNewBiases+permute(repmat(sum(prevSensitivity,[1,2]),[1,size(obj.biasVector,2),size(obj.biasVector,1)]),[3 2 1]);]
             obj.batchNewBiases = obj.batchNewBiases+b;
+        end
+    end
+    methods (Access=protected)
+        function cp = copyElement(obj)
+            s = size(obj.weightMatrix);
+            cp = ConvLayer(size(obj.lastInput),obj.outputSize,s(1:end-1),obj.transferFunc);
+            cp.weightMatrix = obj.weightMatrix;
+            cp.biasVector = obj.biasVector;
         end
     end
 end

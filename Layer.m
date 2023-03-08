@@ -1,5 +1,5 @@
 
-classdef Layer < handle
+classdef Layer < matlab.mixin.Copyable
     properties
         weightMatrix
         biasVector
@@ -38,10 +38,17 @@ classdef Layer < handle
             obj.batchNewWeights(:) = 0;
             obj.batchNewBiases(:) = 0;
         end
+
+        
+    end
+    
+    methods (Abstract,Access=protected)
+        copyElement(obj)
     end
     % abstract keyword is necessary for virtual methods. All methods below
     % are virtual
     methods (Abstract)
+        
         % in matlab we dont have to specify the return variables of
         % virtual methods, they can be specified in the subclass
         % implementations
