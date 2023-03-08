@@ -73,7 +73,8 @@ classdef PoolLayer < Layer
             end
             if any(size(obj.outputInds)<size(a))
                 holder = zeros(size(a));
-                holder(1:size(obj.outputInds(1),1:size(obj.outputInds(2)),1:size(obj.outputInds(3)))) = obj.outputInds;
+                holder(1:size(obj.outputInds,1),1:size(obj.outputInds,2),1:size(obj.outputInds,3)) = obj.outputInds;
+
                 obj.outputInds = holder;
             end
 
