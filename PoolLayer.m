@@ -71,6 +71,12 @@ classdef PoolLayer < Layer
                 a(1:2:end,2*(i-1)+1:2*i,:) = repmat(v(:,i,:), [1, 2]);
                 a(2:2:end,2*(i-1)+1:2*i,:) = repmat(v(:,i,:), [1, 2]);
             end
+            if any(size(obj.outputInds)<size(a))
+                holder = zeros(size(a));
+                holder(1:size(obj.outputInds(1),1:size(obj.outputInds(2)),1:size(obj.outputInds(3)))) = obj.outputInds;
+                obj.outputInds = holder;
+            end
+
             s = obj.outputInds.*a;
             if flag==0
                 obj.sensitivity = s(1:end-1,1:end-1,:);
