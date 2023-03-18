@@ -1,4 +1,6 @@
 classdef PoolLayer < Layer
+% A max pooling layer, to simplify things after convolution has been done
+%   Inherits from the base Layer class
 
     properties
         inputSize
@@ -19,7 +21,6 @@ classdef PoolLayer < Layer
     methods
         function obj = PoolLayer(inputSize,stride)
             obj = obj@Layer(1,1,0);
-            disp("make")
 
             obj.inputSize = inputSize;
             obj.z = zeros(2*ceil(inputSize(1:2)/2));
@@ -32,11 +33,10 @@ classdef PoolLayer < Layer
         % input with 1s where the winners are
         function [obj, output] = forward(obj,input)
             output = zeros(obj.outputSize);
-            %obj.max_val_coords = [];
             obj.outputInds = zeros(obj.inputSize);
             for channel=1:obj.outputSize(3)
                 obj.z(1:obj.inputSize(1),1:obj.inputSize(2))=input(:,:,channel);
-                for row = 1:obj.outputSize(1)
+                for row = 1:obj.outputSize(1) % move through the input and do max pooling
                     for col = 1: obj.outputSize(2)
                         i = (row-1)*obj.stride;
                         j = (col-1)*obj.stride;
@@ -45,28 +45,23 @@ classdef PoolLayer < Layer
                         [actualMax, rowInd] = max(colMax);
                         obj.outputInds((row-1)*obj.stride+rowInd,(col-1)*obj.stride+colInd,channel) = 1;
                         output(row,col,channel) = actualMax;
-                        %obj.max_val_coords(end+1) = [rowInd, colInd];
                     end
                 end
             end
             obj.lastInput = input;
         end
         
-        % I *think* we have to compute the gradient of the previous layer
-        % then we just take only the winning elements of that
+        % use the "winners" and the sensitivity of the next layer to calculate this layer's sensitivities
         function obj = calcSensitivity(obj,prevSensitivity,prevWeight)
-%             shite = prevWeight'*prevSensitivity;
-%             s = zeros(obj.outputInds);
-%             for i = 1:length(obj.max_val_coords)
-%                 s(obj.max_val_coords(i(1)), obj.max_val_coords(i(2))) = shite(i);
-%             end
-            flag=0;
-            if length(size(prevWeight))<=2
+            flag=0; % store whether or not we needed to reshape
+
+            if length(size(prevWeight))<=2 % change weights to match this layer's output
                 v = reshape(prevWeight'*prevSensitivity,obj.outputSize);
             else
                 v = prevSensitivity;
                 flag = 1;
             end
+
             a = zeros([size(obj.z) obj.inputSize(3)]);
             for i = 1:size(a,1)/2
                 a(1:2:end,2*(i-1)+1:2*i,:) = repmat(v(:,i,:), [1, 2]);
@@ -81,19 +76,15 @@ classdef PoolLayer < Layer
 
             s = obj.outputInds.*a;
             if flag==0
+                % we did reshape earlier, so now we need to go back
                 obj.sensitivity = s(1:end-1,1:end-1,:);
             else
                 obj.sensitivity = s;
             end
-
-%             s = obj.outputInds.*reshape(prevWeight'*prevSensitivity, size(obj.outputInds));
         end
 
-        
-    
-        % purely only here because if we dont have this and the following
-        % functions then this technically isnt a subclass but an abstract
-        % class so it wont be able to fall under the layer class
+        % pool layer is the one type that doesn't really need this function, 
+        % so we'll leave the implementation blank
         function obj = updateLayer(obj,varargin)
         end
     end

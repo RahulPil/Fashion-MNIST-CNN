@@ -1,6 +1,7 @@
 classdef FullyConLayer2 < Layer
-    %UNTITLED5 Summary of this class goes here
-    %   Detailed explanation goes here
+% A version of the fully connected layer, customized to not be the final layer in the network
+%   Inherits from the Layer base class
+
     properties
         netInput
     end
@@ -22,13 +23,8 @@ classdef FullyConLayer2 < Layer
             output = obj.transferFunc(obj.netInput);
         end
         
-        % I think the derivative of the loss wrt the softmax output is just
-        % softmax(netInput)-target aka -error
-        % this is that expression that I asked him about and he didn't know
-        % how to derive but there seems to be a good derivation here:
-        % https://towardsdatascience.com/derivative-of-the-softmax-function
-        % -and-the-categorical-cross-entropy-loss-ffceefc081d1
-        
+        % this is run after each input, adding the change for the current iteration to the 
+        % summed changes to the weights and biases
         function obj = updateLayer(obj, prevSensitivity)
             obj.batchNewWeights = obj.batchNewWeights + obj.sensitivity*obj.lastInput';
             obj.batchNewBiases = obj.batchNewBiases + obj.sensitivity;
@@ -40,11 +36,13 @@ classdef FullyConLayer2 < Layer
     end
 
     methods (Access=private)
+        % derivative of rectified linear unit (relu)
         function output = direlu(~, input)
             b = logical(input>0);
             output = double(b);
         end
     end
+
     methods (Access=protected)
         function cp = copyElement(obj)
             cp = FullyConLayer2(size(obj.weightMatrix,1),size(obj,weightMatrix,1),obj.transferFunc);

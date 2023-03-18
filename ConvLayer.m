@@ -1,5 +1,6 @@
 classdef ConvLayer < Layer
-    % convolutional layer
+% A convolutional layer
+%   Inherits from the Layer base class
 
     properties
         outputSize
@@ -33,11 +34,6 @@ classdef ConvLayer < Layer
         function [obj, s] = calcSensitivity(obj, prevSensitivity,~)
             % this is the one where we have a 180 flipped kernel that
             % convolves over the gradient recieved from the maxpool layer
-            % but make sure that its a full convolution
-            % do we also have to actually use the direvative of the relu
-            % function here? because we could but... idk i thought it might
-            % be redundant but it might not be if we arent dealing with any
-            % max pooling layers in the network right?
             r = rot90(obj.weightMatrix, 2);
             s = zeros(size(obj.lastInput));
             for i=1:size(obj.lastInput,3)
@@ -53,13 +49,10 @@ classdef ConvLayer < Layer
                 obj.batchNewWeights(:,:,:,i) = obj.batchNewWeights(:,:,:,i) + convn(obj.lastInput,prevSensitivity(:,:,i),'valid');
             end
 
-            
             % turns out the gradient of the bias is just the sum of the
-            % next layers' gradient?
+            % next layers' gradient
             b = repmat(sum(prevSensitivity,[1,2]),[size(obj.biasVector,1),size(obj.biasVector,2),1]);
-            % size(b)
-            % b = reshape(b, [26, 26, obj.numFilters]);        % this line might very well be problematic
-%             obj.batchNewBiases = obj.batchNewBiases+permute(repmat(sum(prevSensitivity,[1,2]),[1,size(obj.biasVector,2),size(obj.biasVector,1)]),[3 2 1]);]
+
             obj.batchNewBiases = obj.batchNewBiases+b;
         end
     end
